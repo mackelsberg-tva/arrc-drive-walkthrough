@@ -753,8 +753,8 @@ const SLIDES = [
     start: ["home"], side: "home", cursor: [980, 820],
     caps: [
       ["Open Drive as usual", "Go to Google Drive, signed in with the account you use for ARRC."],
-      ["Click Shared drives", "ARRC is a shared drive. Look in the left menu, not in My Drive or Shared with me."],
-      ["Open ARRC", "Everything here belongs to the team, not to whoever made it. Nothing disappears when someone leaves or tidies their own Drive."],
+      ["Click Shared drives", "ARRC is a shared drive. Look in the left menu, not in My Drive or Shared with me. Not there? You may be in another Google account."],
+      ["Open ARRC", "Everything here belongs to the team, so nothing disappears when someone leaves. Make ARRC files here, not in My Drive."],
       ["Most weeks you need two folders", "01 holds every research product and the projects tracker. 02 holds the Running Agenda and every meeting."],
       ["90 is the attic", "Retired files from every section. Nothing in it is current, and the number keeps it at the bottom."]
     ],
@@ -774,10 +774,10 @@ const SLIDES = [
     start: ["drives", "arrc"], cursor: [1000, 860],
     caps: [
       ["Open 01", "The folder for every research product, from first draft to release."],
-      ["Start with the tracker", "Where each of the 17 funded projects stands. The one file in 01 worth bookmarking."],
+      ["Start with the tracker", "Where each of the 17 funded projects stands. The one file in 01 worth starring."],
       ["How a piece gets to release", "The process map, the timeline, and the pillar descriptions. Author guidelines and templates go here as they're written."],
-      ["One folder per kind of product", "Funded papers, the ARRC Post, and the exit survey. When the first batch of papers is released, a 04 - Releases folder joins them."],
-      ["Seventeen projects, one folder each", "Each folder is named for its PIs and matches a row in the tracker."],
+      ["One folder per kind of product", "Funded papers, the ARRC Post, and the exit survey, each with its own folder."],
+      ["Seventeen projects, one folder each", "Each is named for its PIs and matches a row in the tracker. In Drive, the names start with a short project code."],
       ["What a working folder looks like", "The ARRC Review and Post drafts sit together, each starting with its date."]
     ],
     steps: [
@@ -797,9 +797,9 @@ const SLIDES = [
       ["Say you need the partner toolkit", "You're in a project folder, a few levels down."],
       ["Jump back to ARRC", "Click ARRC under Shared drives in the left menu. It works from any folder."],
       ["Open 01", "Every product starts here."],
-      ["Open the product", "Each product has the same shape: working folders, one red finals folder, and one brown archive."],
-      ["Open its finals folder", "If it went out the door, it came from here. PDFs to send, Word Docs to edit."],
-      ["Take the newest date", "Two toolkits. The October 27 week-two version is the one to send now."]
+      ["Open the product", "The exit survey has working folders, one red finals folder, and one brown archive. The ARRC Post has Drafts and Published."],
+      ["Open its finals folder", "If it went out the door, it came from here. PDFs to send, and Word versions in case someone needs the text."],
+      ["Take the newest date", "Finals keep the names they went out with, so the date sits at the end. The October 27 toolkit is the one to send now."]
     ],
     steps: [
       async s => { await s.cursorTo(s.nav("arrc"), { dx: 80 }); await s.click(); s.setSide("arrc"); s.path = ["drives"]; await s.open("arrc"); },
@@ -819,7 +819,7 @@ const SLIDES = [
     caps: [
       ["Open 02", "Meetings, check-ins, and events all live here."],
       ["Every event gets a dated folder", "Year, month, day, then the name, so they line up oldest to newest. 00 stays on top and the archive at the end."],
-      ["Bookmark the Running Agenda", "The agenda for our check-ins lives in 00, next to the notes from earlier check-ins."]
+      ["Star the Running Agenda", "It lives in the 00 folder inside 02, next to the notes from earlier check-ins."]
     ],
     steps: [
       async s => { await s.into("02 - Meetings & Events", "m02"); await s.wait(200); s.emph(["2025-06-13 ARRC Convening", "2026-10-01 NASPAA Panel", "2026-10-22 Bridging the Gap Meeting"]); await s.cursorTo(s.el("2026-10-22 Bridging the Gap Meeting"), { dx: 260 }); },
@@ -833,7 +833,7 @@ const SLIDES = [
         <li>${FOLD("#5F6368")}<span><b>02 - Memos and Drafts</b>Working memos.</span></li>
         <li>${FOLD("#5F6368")}<span><b>03 - Grants and Stipends</b>RFP reviews and the records from each round.</span></li></ul></div>
       <div data-step="2" data-focus><h3>${FOLD("#5F6368")}04 - People &amp; Outreach</h3><ul>
-        <li>${ICO.sheet}<span><b>ARRC Master Contact List</b>The one list of contacts.</span></li>
+        <li>${ICO.sheet}<span><b>ARRC Master Contact List</b>Our shared contact list.</span></li>
         <li>${FOLD("#5F6368")}<span><b>01 - Founding Schools</b>Notes to deans and Deans Summit materials.</span></li></ul></div>
       <div data-step="3" data-focus><h3>${FOLD("#5F6368")}05 - Communications</h3><ul>
         <li>${FOLD("#5F6368")}<span><b>01 - Logos and Templates</b>Logos, letterhead, and the slide template.</span></li>
@@ -854,7 +854,7 @@ const SLIDES = [
     caps: [
       ["Names without a date", "A meeting folder with plain names. Drive sorts them A to Z, which says nothing about what came first."],
       ["Date first", "Year, month, day, then the title. The file jumps ahead of the undated names."],
-      ["Anything made once gets a date", "Invites, decks, notes, and memos belong to one moment, so each starts with the date it was made. Earlier dates sort higher."],
+      ["Anything made once gets a date", "Invites, decks, notes, and memos each start with the date of the thing itself: the meeting, the release, or else the day it was made."],
       ["Now the folder reads in order", "Oldest at the top, newest at the bottom, the same in every folder of the drive."]
     ],
     steps: [
