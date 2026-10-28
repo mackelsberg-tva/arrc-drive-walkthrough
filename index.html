@@ -75,13 +75,7 @@ h2.t { font: 700 58px/1.06 var(--serif); color: var(--navy); margin: 0; letter-s
 .fcard.pick .face { outline: 0 solid var(--white); }
 .slide.active .fcard.pick { animation: deal .8s var(--ease) both, pick 1s var(--ease) 2.5s both; animation-delay: calc(var(--k) * 90ms + 250ms), 2.4s; }
 @keyframes pick { to { transform: translateX(-36px); } }
-.ccur { position: absolute; left: 520px; top: 560px; width: 40px; opacity: 0; }
-.slide.active .ccur { animation: ccur 1.6s cubic-bezier(.5,0,.2,1) 1.4s both; }
-/* the opening sequence: the cover dives into folder 00, a Drive window shows the folder, and opening this presentation leads to slide 2 */
 .cover .front { position: absolute; inset: 0; }
-.cover .bridge-wrap { position: absolute; inset: 0; opacity: 0; pointer-events: none; }
-.scene.bridge .gd { left: 242px; top: 110px; width: 1436px; height: 860px; }
-@keyframes ccur { 0% { opacity: 0; transform: translate(60px, 120px); } 30% { opacity: 1; } 70% { transform: translate(0, 0); } 78% { transform: scale(.88); } 86%, 100% { opacity: 1; transform: none; } }
 
 /* ---------- section divider ---------- */
 .section { background: var(--navy); color: var(--white); }
@@ -732,8 +726,7 @@ const SLIDES = [
     const cards = [["00", "Google Drive Guide", "#5D6B84"], ["01", "Research Products and Rollout", "#C9342B"], ["02", "Meetings & Events", "#15294C"], ["03", "Operations", "#2A4475"], ["04", "People & Outreach", "#3B5687"], ["05", "Communications", "#4D6799"], ["90", "Archive", "#AC725E"]];
     return `<div class="front"><img class="logo" src="${LOGO}" alt="ARRC">
       <div class="txt"><h1 class="rise">The new ARRC Drive</h1><p class="dek rise" style="--d:120">One shared home for everything ARRC. Where things live, what the names mean, and how to find the current version.</p><div class="rule rise" style="--d:220"></div><p class="when rise" style="--d:300">October 2026</p></div>
-      <div class="stack">${cards.map(([n, t, c], k) => `<div class="fcard${n === "01" ? " pick" : ""}" style="--k:${k};--c:${c}"><div class="tab"></div><div class="face"><b>${n}</b><span>${t}</span></div></div>`).join("")}<div class="ccur">${ARROW}</div></div></div>
-      <div class="bridge-wrap" aria-hidden="true"><div class="scene bridge">${gdHTML()}<div class="cur">${ARROW}</div></div></div>`; },
+      <div class="stack">${cards.map(([n, t, c], k) => `<div class="fcard${n === "01" ? " pick" : ""}" style="--k:${k};--c:${c}"><div class="tab"></div><div class="face"><b>${n}</b><span>${t}</span></div></div>`).join("")}</div></div>`; },
     notes: "About ten minutes. Goal: after this, anyone on the team can open the Drive and find a final file, a project folder, or the agenda on their own." },
 
   // ---- three things ----
@@ -932,10 +925,6 @@ SLIDES.forEach(s => {
   if (s.scene) el._scene = new Scene(el, s.scene);
 });
 const slides = [...stage.children];
-const bridgeScene = new Scene(slides[0].querySelector(".bridge-wrap"), {
-  start: ["drives", "arrc", "g00"], cursor: [1380, 560],
-  steps: [async s => { const e = s.el("2026-10-28 ARRC Drive Walkthrough"); await s.cursorTo(e, { dx: 260 }); s.select(e); await s.wait(120); await s.click(true); if (!s.fast) zoomOpen(e); }]
-});
 
 // progress bar: one segment per section, one tick per slide
 const scrub = document.getElementById("scrub");
@@ -971,7 +960,6 @@ function show(i, { step = 0, instant = false, keep = null } = {}) {
   clearTimeout(leaveTimer);
   slides.forEach(s => s.classList.remove("leave"));
   if (!same && prev && prev !== keep) { prev.classList.remove("active", "settled", "soft"); if (!instant) { prev.classList.add("leave"); leaveTimer = setTimeout(() => prev.classList.remove("leave"), 550); } }
-  if (slide.classList.contains("cover") && typeof bridgeScene !== "undefined") coverReset(slide);
   slide.classList.add("active");
   if (instant) slide.classList.add("settled");
   slide.classList.add("snap"); applyStep(slide, step === "last" ? slide._total : Math.min(step, slide._total)); void slide.offsetWidth; slide.classList.remove("snap");
@@ -984,7 +972,6 @@ function show(i, { step = 0, instant = false, keep = null } = {}) {
 }
 // Forward: finish a running animation, else play the next build step, else go to the next slide.
 function advance() {
-  if (zooming) return;
   const slide = slides[cur], sc = slide._scene;
   if (sc && sc.running) { sc.hurry(); return; }
   if (slide._step < slide._total) {
@@ -992,86 +979,35 @@ function advance() {
     if (sc) sc.play(slide._step); else applyStep(slide, slide._step);
     return;
   }
-  // The cover takes two presses: one opens folder 00, the next opens this presentation.
-  if (cur === 0 && slide.classList.contains("cover") && !instantMotion()) {
-    if (coverStage === 0) { coverOpen(slide); return; }
-    if (coverStage === 1) { coverFinish(); return; }
-    if (coverStage === 2) { coverStage = 3; coverBusy = true; bridgeScene.play(1); return; }
-    coverStop(); show(1); return;
-  }
   if (cur < slides.length - 1) {
     const nx = slides[cur + 1];
     if (!instantMotion() && SLIDES[cur + 1].cont) return softTo(cur + 1, 650);
+    if (!instantMotion() && slide.classList.contains("cover")) return softTo(cur + 1, 800);
     if (!instantMotion() && (slide.classList.contains("section") || nx.classList.contains("section"))) return softTo(cur + 1, 1100);
     show(cur + 1);
   }
 }
 // A gentle cross-fade: the old slide stays put while the new one fades in on top of it.
-// Used around the blue section slides, and where one Drive scene picks up where the last one ended.
+// Used after the cover, around the blue section slides, and where one Drive scene picks up where the last one ended.
 function softTo(i, dur) {
   const prev = slides[cur], nx = slides[i];
   nx.classList.add("soft");
   show(i, { keep: prev });
   prev.style.zIndex = 1;
   // when the Drive window carries over, clear the old title and caption first so the two never overlap
-  const out = SLIDES[i].cont ? [...prev.querySelectorAll(".shead, .caps")].map(e => e.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 260, easing: "ease-out", fill: "forwards" })) : [];
-  const an = nx.animate([{ opacity: 0 }, { opacity: 1 }], { duration: dur, delay: out.length ? 180 : 0, easing: "ease-in-out", fill: "backwards" });
+  // leaving the cover, its text and folders fade out before slide 2 fades in
+  const fromCover = prev.classList.contains("cover");
+  const olds = SLIDES[i].cont ? [...prev.querySelectorAll(".shead, .caps")] : fromCover ? [prev.querySelector(".front")] : [];
+  const out = olds.map(e => e.animate([{ opacity: 1 }, { opacity: 0 }], { duration: fromCover ? 450 : 260, easing: "ease-out", fill: "forwards" }));
+  const an = nx.animate([{ opacity: 0 }, { opacity: 1 }], { duration: dur, delay: !out.length ? 0 : fromCover ? 400 : 180, easing: "ease-in-out", fill: "backwards" });
   // "soft" stays on until the slide is left: taking it off now would restart the CSS entrance and flash
   const done = () => { prev.style.zIndex = ""; out.forEach(o => o.cancel()); if (slides[cur] !== prev) prev.classList.remove("active", "settled", "soft"); };
   an.onfinish = done; an.oncancel = done;
 }
-let coverTimers = [], zooming = false, coverBusy = false, coverStage = 0;
-const EASE = "cubic-bezier(.45,.05,.2,1)";
-const ownAnims = el => el.getAnimations().filter(a => !(window.CSSAnimation && a instanceof CSSAnimation) && !(window.CSSTransition && a instanceof CSSTransition));
-// The opening: the cursor double-clicks folder 00, the cover dives into it, and a Drive window shows the folder.
-// Then the cursor opens this presentation, which zooms into slide 2.
-function coverOpen(slide) {
-  coverBusy = true; coverStage = 1;
-  const k = stage.getBoundingClientRect().width / 1920;
-  const face = slide.querySelector(".fcard .face"), ccur = slide.querySelector(".ccur"), front = slide.querySelector(".front"), bw = slide.querySelector(".bridge-wrap");
-  const f = face.getBoundingClientRect(), c = ccur.getBoundingClientRect(), st = stage.getBoundingClientRect();
-  const dx = (f.left + 150 - c.left) / k, dy = (f.top + f.height / 2 - c.top) / k, T = `translate(${dx}px, ${dy}px)`;
-  ccur.animate([{ opacity: 1, transform: "translate(0, 0)" }, { opacity: 1, transform: T }], { duration: 900, easing: EASE, fill: "forwards" });
-  const at = (ms, fn) => { const t = { fn }; t.id = setTimeout(() => { t.done = true; fn(); }, ms); coverTimers.push(t); };
-  at(950, () => ccur.animate([{ opacity: 1, transform: T }, { transform: T + " scale(.85)", offset: .2 }, { transform: T, offset: .45 }, { transform: T + " scale(.85)", offset: .65 }, { opacity: 1, transform: T }], { duration: 380, fill: "forwards" }));
-  at(1380, () => {
-    front.style.transformOrigin = `${(f.left + f.width / 2 - st.left) / k}px ${(f.top + f.height / 2 - st.top) / k}px`;
-    front.animate([{ opacity: 1, transform: "none" }, { opacity: .9, offset: .5 }, { opacity: 0, transform: "scale(3.4)" }], { duration: 950, easing: "cubic-bezier(.55,0,.3,1)", fill: "forwards" });
-    bw.animate([{ opacity: 0, transform: "scale(.92)" }, { opacity: 1, transform: "none" }], { duration: 800, delay: 300, easing: "cubic-bezier(.2,.8,.2,1)", fill: "forwards" });
-  });
-  at(2300, () => { coverTimers = []; coverBusy = false; coverStage = 2; });
-}
-// A press during the opening jumps to its end: the Drive window showing folder 00.
-function coverFinish() {
-  const slide = slides[0], pending = coverTimers.filter(t => !t.done);
-  coverTimers.forEach(t => clearTimeout(t.id)); coverTimers = [];
-  pending.forEach(t => t.fn());
-  slide.querySelectorAll(".front, .ccur, .bridge-wrap").forEach(el => ownAnims(el).forEach(a => a.finish()));
-  coverBusy = false; coverStage = 2;
-}
-function coverStop() { coverBusy = false; coverTimers.forEach(t => clearTimeout(t.id)); coverTimers = []; if (bridgeScene.running) bridgeScene.hurry(); }
-function coverReset(slide) {
-  coverStop();
-  slide.querySelectorAll(".front, .ccur, .bridge-wrap").forEach(el => ownAnims(el).forEach(a => a.cancel()));
-  ownAnims(slide).forEach(a => a.cancel()); slide.style.zIndex = ""; slide.style.transformOrigin = "";
-  bridgeScene.reset(); coverStage = 0;
-}
-// Opening a file: the slide zooms toward what was clicked and fades while the next slide settles in underneath.
-function zoomOpen(el) {
-  zooming = true; coverBusy = false;
-  const prev = slides[cur], st = stage.getBoundingClientRect(), r = el.getBoundingClientRect(), k = st.width / 1920;
-  prev.style.transformOrigin = `${(r.left + r.width / 2 - st.left) / k}px ${(r.top + r.height / 2 - st.top) / k}px`;
-  prev.style.zIndex = 3;
-  const an = prev.animate([{ opacity: 1, transform: "none" }, { opacity: .85, offset: .6 }, { opacity: 0, transform: "scale(3.2)" }], { duration: 850, easing: "cubic-bezier(.55,0,.3,1)", fill: "forwards" });
-  if (cur < slides.length - 1) show(cur + 1, { keep: prev });
-  an.onfinish = () => { prev.classList.remove("active", "settled"); an.cancel(); prev.style.zIndex = ""; prev.style.transformOrigin = ""; zooming = false; };
-}
 function instantMotion() { return window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches; }
 function retreat() {
-  if (zooming) return;
   const slide = slides[cur];
   if (slide._step > 0) { applyStep(slide, slide._step - 1); return; }
-  if (cur === 0 && coverStage > 0) { coverReset(slide); return; }
   if (cur > 0) show(cur - 1, { step: "last", instant: true });
 }
 function toggleNotes() { notesOn = !notesOn; stage.querySelectorAll(".notes").forEach(n => { n.hidden = !notesOn; }); }
