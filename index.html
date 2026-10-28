@@ -318,6 +318,7 @@ h2.t { font: 700 58px/1.06 var(--serif); color: var(--navy); margin: 0; letter-s
   <div class="scrub" id="scrub"></div>
   <button class="navb" id="next" aria-label="Forward">&rarr;</button>
   <button class="navb" id="ntog" aria-label="Toggle speaker notes">Notes</button>
+  <button class="navb" id="fs" aria-label="Full screen" title="Full screen (F)">Full screen</button>
   <span class="count" id="count"></span>
 </div>
 
@@ -1083,6 +1084,7 @@ document.addEventListener("keydown", e => {
   else if (e.key === "Home") show(0, { instant: true });
   else if (e.key === "End") show(slides.length - 1, { step: "last", instant: true });
   else if (e.key === "n" || e.key === "N") toggleNotes();
+  else if (e.key === "f" || e.key === "F") toggleFull();
 });
 stage.addEventListener("click", e => {
   if (e.target.closest("a, button")) return;
@@ -1092,6 +1094,16 @@ stage.addEventListener("click", e => {
 document.getElementById("prev").addEventListener("click", retreat);
 document.getElementById("next").addEventListener("click", advance);
 document.getElementById("ntog").addEventListener("click", toggleNotes);
+// Full screen: the button or F. Esc leaves, as in any browser.
+function toggleFull() {
+  const d = document, el = d.documentElement;
+  if (d.fullscreenElement || d.webkitFullscreenElement) (d.exitFullscreen || d.webkitExitFullscreen).call(d);
+  else (el.requestFullscreen || el.webkitRequestFullscreen).call(el);
+}
+const fsb = document.getElementById("fs");
+if (!(document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen)) fsb.hidden = true;
+fsb.addEventListener("click", toggleFull);
+["fullscreenchange", "webkitfullscreenchange"].forEach(ev => document.addEventListener(ev, () => { fsb.textContent = (document.fullscreenElement || document.webkitFullscreenElement) ? "Exit full screen" : "Full screen"; fit(); }));
 window.addEventListener("hashchange", () => { const m = /^#s(\d+)$/.exec(location.hash); if (m && +m[1] - 1 !== cur) show(+m[1] - 1, { instant: true }); });
 const m0 = /^#s(\d+)$/.exec(location.hash);
 show(m0 ? +m0[1] - 1 : 0, { instant: !!m0 });
