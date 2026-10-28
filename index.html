@@ -424,7 +424,6 @@ const TREE = {
     fi("sheet", "Exit Survey Launch Tracker", "2026-10-27 19:35", "11 KB"),
     fi("doc", "Exit Survey TVA Newsletter Item 10-22-2026", "2026-10-21 14:06", "2 KB") ] },
   pdf: { name: "PDFs", items: [
-    fi("pdf", "Exit Survey Partner Toolkit 10-22-2026.pdf", "2026-10-22 12:15", "300 KB"),
     fi("pdf", "Exit Survey Partner Toolkit 10-27-2026.pdf", "2026-10-27 11:36", "116 KB"),
     fi("pdf", "Exit Survey Press Release 10-22-2026.pdf", "2026-10-21 11:38", "95 KB"),
     fi("pdf", "Exit Survey Toolkit - Internal Companion 10-22-2026.pdf", "2026-10-21 11:31:09", "139 KB"),
@@ -792,7 +791,7 @@ const SLIDES = [
       ["Open 01", "Every product starts here."],
       ["Open the product", "The exit survey has working folders, one red finals folder, and one brown archive. The ARRC Post has Drafts and Published."],
       ["Open its finals folder", "If it went out the door, it came from here. PDFs to send, and Word versions in case someone needs the text."],
-      ["Take the newest date", "Finals keep the names they went out with, so the date sits at the end. The October 27 toolkit is the one to send now."]
+      ["Open the final", "Only the current version is kept here. Older ones move to the archive. Finals keep the names they went out with, so the date sits at the end."]
     ],
     steps: [
       async s => { await s.cursorTo(s.nav("arrc"), { dx: 80 }); await s.click(); s.setSide("arrc"); s.path = ["drives"]; await s.open("arrc"); },
